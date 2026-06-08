@@ -1,10 +1,10 @@
-import { SidebarProvider } from "@/components/ui/sidebar"
 import { ChatSidebar } from "@/components/chat/chat-sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { listAgents } from "@/lib/agents/queries"
 import { getCurrentSession } from "@/lib/auth-current"
 import { listRecentConversations } from "@/lib/chat/queries"
 
-export default async function ChatLayout({
+export default async function AgentsLayout({
   children,
 }: {
   children: React.ReactNode
@@ -19,7 +19,6 @@ export default async function ChatLayout({
     <SidebarProvider
       style={{ "--sidebar-width": "220px" } as React.CSSProperties}
     >
-      {/* bg-background = lavender in light, dark in dark mode */}
       <div className="flex h-screen w-full overflow-hidden bg-background">
         <ChatSidebar
           agents={agents.map((agent) => ({
@@ -37,7 +36,6 @@ export default async function ChatLayout({
           }))}
         />
         <div className="flex flex-1 overflow-hidden p-3">
-          {/* Main content = bg-card (white/dark card) */}
           <main className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm">
             {children}
           </main>
