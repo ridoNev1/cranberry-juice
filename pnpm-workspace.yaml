@@ -1,0 +1,11 @@
+packages: []
+
+overrides:
+  kysely: "0.28.17"
+
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+  msw: false
+  '@prisma/engines': true
+  prisma: true
