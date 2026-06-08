@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
-import { PlusIcon, SettingsIcon, SparklesIcon } from "lucide-react"
+import { PlusIcon, SettingsIcon } from "lucide-react"
 
 import { ChatRoom, type ChatRoomMessage } from "@/components/chat/chat-room"
 import { Button } from "@/components/ui/button"
@@ -81,9 +81,7 @@ export default async function AgentChatPage({
         <div className="flex min-w-0 items-center gap-2">
           <SidebarTrigger className="-ml-1" />
           <div className="ml-1 flex min-w-0 items-center gap-2">
-            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-violet-500 text-white dark:bg-violet-600">
-              <SparklesIcon className="size-3.5" />
-            </div>
+            <img src="/cranberry-logo.png" alt="Cranberry" className="size-6 shrink-0 rounded-md" />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-foreground">
                 {agent.name}

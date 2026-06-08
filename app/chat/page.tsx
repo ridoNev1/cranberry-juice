@@ -1,5 +1,4 @@
 import { redirect, notFound } from "next/navigation"
-import { SparklesIcon } from "lucide-react"
 
 import { ChatRoom, type ChatRoomMessage } from "@/components/chat/chat-room"
 import { SidebarTrigger } from "@/components/ui/sidebar"
@@ -61,9 +60,7 @@ export default async function ChatPage({
         <div className="flex items-center gap-2">
           <SidebarTrigger className="-ml-1" />
           <div className="ml-1 flex items-center gap-2">
-            <div className="flex size-6 items-center justify-center rounded-full bg-violet-500 text-white dark:bg-violet-600">
-              <SparklesIcon className="size-3.5" />
-            </div>
+            <img src="/cranberry-logo.png" alt="Cranberry" className="size-6 rounded-md" />
             <span className="text-sm font-semibold text-foreground">
               Cranberry Juice
             </span>

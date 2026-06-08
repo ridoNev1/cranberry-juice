@@ -33,7 +33,6 @@ import {
   LibraryIcon,
   SettingsIcon,
   LogOutIcon,
-  SparklesIcon,
   MessageSquareIcon,
   Trash2Icon,
 } from "lucide-react"
@@ -177,9 +176,11 @@ export function ChatSidebar({
         {/* Logo */}
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex size-8 items-center justify-center rounded-xl bg-violet-500 text-white shadow-sm dark:bg-violet-600">
-              <SparklesIcon className="size-4" />
-            </div>
+            <img
+              src="/cranberry-logo.png"
+              alt="Cranberry"
+              className="size-8 rounded-lg"
+            />
             <span className="text-base font-bold text-foreground">
               Cranberry
             </span>
