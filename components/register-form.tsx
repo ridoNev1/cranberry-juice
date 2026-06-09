@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { signUp } from "@/lib/auth-client"
-import { TurnstileWidget } from "@/components/turnstile-widget"
 import { Form, Field as FormischField, useForm } from "@formisch/react"
 import type { SubmitHandler } from "@formisch/react"
 import * as v from "valibot"
@@ -43,7 +42,6 @@ export function RegisterForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter()
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const form = useForm({
@@ -56,11 +54,6 @@ export function RegisterForm({
   })
 
   const handleRegister: SubmitHandler<typeof RegisterSchema> = async (output) => {
-    if (!turnstileToken) {
-      toast.error("Please complete the Turnstile challenge")
-      return
-    }
-
     setLoading(true)
     const { data, error } = await signUp.email({
       email: output.email,
@@ -155,14 +148,10 @@ export function RegisterForm({
                 )}
               </FormischField>
 
-              <div className="pt-2 pb-2 flex justify-center">
-                <TurnstileWidget onSuccess={(token) => setTurnstileToken(token)} />
-              </div>
-
               <Field>
                 <Button
                   type="submit"
-                  disabled={loading || !turnstileToken}
+                  disabled={loading}
                   className="w-full"
                 >
                   {loading ? "Creating account..." : "Sign up"}

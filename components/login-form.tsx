@@ -10,7 +10,6 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { TurnstileWidget } from "@/components/turnstile-widget"
 import {
   Field,
   FieldDescription,
@@ -38,8 +37,6 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
-
   const form = useForm({
     schema: LoginSchema,
     initialInput: {
@@ -49,11 +46,6 @@ export function LoginForm({
   })
 
   const handleLogin: SubmitHandler<typeof LoginSchema> = async (output) => {
-    if (!turnstileToken) {
-      toast.error("Please complete the Turnstile challenge")
-      return
-    }
-
     setLoading(true)
     const { data, error } = await signIn.email({
       email: output.email,
@@ -134,14 +126,10 @@ export function LoginForm({
                 )}
               </FormischField>
 
-              <div className="pt-2 pb-2 flex justify-center">
-                <TurnstileWidget onSuccess={(token) => setTurnstileToken(token)} />
-              </div>
-
               <Field>
                 <Button
                   type="submit"
-                  disabled={loading || !turnstileToken}
+                  disabled={loading}
                   className="w-full mt-4"
                 >
                   {loading ? "Logging in..." : "Login"}
