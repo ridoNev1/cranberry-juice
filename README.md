@@ -106,17 +106,60 @@ pnpm lint       # ESLint
 pnpm format     # Prettier
 ```
 
-## Production Deploy Checklist
+## System Design Overview
 
-- [ ] Set all environment variables (never commit `.env`)
-- [ ] `BETTER_AUTH_SECRET` must be a strong random 32+ char string
-- [ ] PostgreSQL: run `pnpm prisma migrate deploy` (not `migrate dev`)
-- [ ] MinIO: create bucket, configure CORS to allow app origin
-- [ ] OpenAI: verify API key has access to `gpt-4o`, `gpt-5.4-mini`, `web_search_preview`
-- [ ] Resend: verify domain DNS records
-- [ ] Cloudflare Turnstile: add production domain to site settings
-- [ ] Rate limit: `lib/rate-limit.ts` uses in-memory store — swap to Redis (`@upstash/ratelimit`) for multi-instance
-- [ ] Run `pnpm build` — no errors before deploying
-- [ ] Test auth flow end-to-end (register → verify email → login)
-- [ ] Test file upload and agent creation
-- [ ] Test streaming chat response
+### Requirements Coverage
+
+| Requirement | Implementation |
+|---|---|
+| User registration & login | Better Auth v1.6.14 — email + password with OTP email verification via Resend |
+| Account creation | `POST /api/auth/sign-up` — creates User + Session, sends OTP |
+| Email/password auth | `POST /api/auth/sign-in/email` — bcrypt verify, HTTP-only session cookie |
+| Bot protection | Cloudflare Turnstile on register + login forms, verified server-side |
+| Store & associate prompts per agent | `SavedPrompt` table (FK → Agent + User); CRUD via `/api/saved-prompts` |
+| Chat interface via OpenAI Responses API | `POST /api/chat` — streams SSE using `openai.responses.create({ stream: true })` |
+| Upload files to project (OpenAI Files API) | `POST /api/agents/[id]/files` — uploads to OpenAI Files API + vector store for RAG |
+| Scalability (multi-user, multi-project) | DB indexed on userId/agentId; stateless Next.js; rate limiting per user |
+| Security (protect user data & auth flows) | Session-gated routes, ownership checks on all queries, HTTP-only cookies |
+| Extensibility (future additions) | Model selection decoupled (`lib/agents/models.ts`); tools are additive array |
+| Performance (low-latency responses) | SSE streaming — first token in <1s; `previous_response_id` avoids full history resend |
+| Reliability (graceful error handling) | Error boundaries per route (`error.tsx`), SSE error events, toast notifications |
+
+### Data Flow
+
+```mermaid
+flowchart LR
+    Browser -->|HTTPS| nginx
+    nginx -->|HTTP :3000| App["Next.js App"]
+    App --> PG["PostgreSQL\nUsers · Agents\nConversations · Messages"]
+    App --> Minio["MinIO\nFile blobs"]
+    App --> OpenAI["OpenAI API\nResponses · Files\nVector Stores"]
+```
+
+### Key Design Decisions
+
+**Authentication:** Better Auth handles sessions in PostgreSQL (not JWTs) — HTTP-only cookies prevent XSS token theft. Email OTP required before login is permitted.
+
+**AI Context:** Uses OpenAI Responses API `previous_response_id` chaining — only the latest response ID is stored per conversation, not the full message history. This reduces token usage and latency on follow-up messages.
+
+**File Storage (dual-path):** Every file is stored in both MinIO (permanent binary) and OpenAI Files API (inference). MinIO is the source of truth; OpenAI IDs are stored as references. Deletion hits both.
+
+**Agent isolation:** Each agent has its own OpenAI vector store. RAG search is automatically scoped to that agent's knowledge base — no cross-contamination between agents.
+
+**Streaming:** `/api/chat` returns a `text/event-stream` response. Events: `start` (IDs assigned) → `delta` (text chunks) → `done` (message persisted) → `error`. Client reads via `ReadableStream`.
+
+**Rate limiting:** Sliding window, 20 req/min per user, in-memory (`lib/rate-limit.ts`). Swap to `@upstash/ratelimit` for Redis-backed multi-instance deployments.
+
+### Production Deploy
+
+```bash
+# First deploy — run on server after docker compose up postgres minio
+docker run --rm -e DATABASE_URL=... --network cranberry_cranberry \
+  cranberry-juice:latest node_modules/.bin/prisma migrate deploy
+
+# Subsequent deploys
+./deploy.sh
+```
+
+Live demo: **https://cranberry.satu-meja.com**  
+Architecture doc: [`docs/architecture-fsd.docx`](docs/architecture-fsd.docx)

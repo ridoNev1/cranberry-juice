@@ -7,6 +7,28 @@
 
 ---
 
+## Requirements Traceability
+
+| # | Requirement | Status | Implementation |
+|---|---|---|---|
+| R1 | Authentication with user registration and login | ✅ | Better Auth v1.6.14 — email + bcrypt password, HTTP-only session cookie |
+| R2 | Allow creation of user accounts | ✅ | `POST /api/auth/sign-up` → User record + OTP email via Resend |
+| R3 | Login using email and password | ✅ | `POST /api/auth/sign-in/email` → session created, cookie set |
+| R4 | Store and associate prompts with a project/agent | ✅ | `SavedPrompt` table (FK → Agent + User), CRUD at `/api/saved-prompts` |
+| R5 | Chat interface via OpenAI Responses API | ✅ | `POST /api/chat` — SSE stream using `openai.responses.create()` |
+| R6 | Upload files to a project (OpenAI Files API) | ✅ | `POST /api/agents/[id]/files` → OpenAI Files API + vector store indexing |
+| NF1 | Scalability — multiple users and projects | ✅ | DB indexed by userId/agentId; stateless Next.js; rate limiting per user |
+| NF2 | Security — protect user data and auth flows | ✅ | Session-gated routes, ownership checks, Cloudflare Turnstile, HTTP-only cookies |
+| NF3 | Extensibility — allow future additions | ✅ | Models decoupled in `lib/agents/models.ts`; tools additive array; plugin-ready auth |
+| NF4 | Performance — low-latency chat responses | ✅ | SSE streaming (<1s first token); `previous_response_id` avoids full history resend |
+| NF5 | Reliability — handle errors gracefully | ✅ | Error boundaries per route (`error.tsx`), SSE error events, toast notifications |
+| D1 | Source code in repository | ✅ | GitHub: `ridoNev1/cranberry-juice` |
+| D2 | Instructions to run the application | ✅ | README.md with local setup, env vars, commands |
+| D3 | Brief architecture design explanation | ✅ | This document (`docs/architecture-fsd.docx`) |
+| D4 | Publicly hosted working demo | ✅ | https://cranberry.satu-meja.com |
+
+---
+
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -97,31 +119,20 @@ The system is deployed on a VPS using Docker Compose, with nginx as reverse prox
 
 ## 3. System Architecture
 
-```
-                          ┌──────────────────────────────────┐
-                          │        User Browser               │
-                          │  React 19 + Next.js App Router   │
-                          └──────────────┬───────────────────┘
-                                         │ HTTPS
-                          ┌──────────────▼───────────────────┐
-                          │            nginx                  │
-                          │  SSL termination (Let's Encrypt)  │
-                          │  cranberry.satu-meja.com → :3000  │
-                          └──────────────┬───────────────────┘
-                                         │ HTTP :3000
-                          ┌──────────────▼───────────────────┐
-                          │       Next.js App (Docker)        │
-                          │  - Server Components (SSR)        │
-                          │  - API Routes (/api/*)            │
-                          │  - SSE Streaming (/api/chat)      │
-                          └───┬──────────┬────────────────────┘
-                              │          │          │
-               ┌──────────────▼─┐  ┌────▼──────┐  ┌▼───────────────┐
-               │  PostgreSQL 16  │  │   MinIO   │  │  OpenAI API    │
-               │  (Prisma ORM)   │  │ (S3 compat│  │  Responses API │
-               │  Users, Agents  │  │  files)   │  │  Files API     │
-               │  Conversations  │  └───────────┘  │  Vector Stores │
-               └────────────────┘                  └────────────────┘
+```mermaid
+flowchart TD
+    Browser["User Browser\nReact 19 + Next.js App Router"]
+    nginx["nginx\nSSL termination — Let's Encrypt\ncranberry.satu-meja.com"]
+    App["Next.js App — Docker :3000\nServer Components · API Routes · SSE Streaming"]
+    PG["PostgreSQL 16\nPrisma ORM\nUsers · Agents · Conversations"]
+    Minio["MinIO\nS3-compatible\nFile storage"]
+    OpenAI["OpenAI API\nResponses API · Files API\nVector Stores"]
+
+    Browser -->|HTTPS| nginx
+    nginx -->|HTTP :3000 internal| App
+    App --> PG
+    App --> Minio
+    App --> OpenAI
 ```
 
 **Deployment topology:**
