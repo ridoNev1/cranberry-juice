@@ -1,31 +1,30 @@
 # Cranberry Juice — Functional System Design (FSD)
 
 **Version:** 1.0  
-**Date:** June 2026  
-**Author:** Engineering Team  
+**Date:** June 2026
 **Live Demo:** https://cranberry.satu-meja.com
 
 ---
 
 ## Requirements Traceability
 
-| # | Requirement | Status | Implementation |
-|---|---|---|---|
-| R1 | Authentication with user registration and login | ✅ | Better Auth v1.6.14 — email + bcrypt password, HTTP-only session cookie |
-| R2 | Allow creation of user accounts | ✅ | `POST /api/auth/sign-up` → User record + OTP email via Resend |
-| R3 | Login using email and password | ✅ | `POST /api/auth/sign-in/email` → session created, cookie set |
-| R4 | Store and associate prompts with a project/agent | ✅ | `SavedPrompt` table (FK → Agent + User), CRUD at `/api/saved-prompts` |
-| R5 | Chat interface via OpenAI Responses API | ✅ | `POST /api/chat` — SSE stream using `openai.responses.create()` |
-| R6 | Upload files to a project (OpenAI Files API) | ✅ | `POST /api/agents/[id]/files` → OpenAI Files API + vector store indexing |
-| NF1 | Scalability — multiple users and projects | ✅ | DB indexed by userId/agentId; stateless Next.js; rate limiting per user |
-| NF2 | Security — protect user data and auth flows | ✅ | Session-gated routes, ownership checks, Cloudflare Turnstile, HTTP-only cookies |
-| NF3 | Extensibility — allow future additions | ✅ | Models decoupled in `lib/agents/models.ts`; tools additive array; plugin-ready auth |
-| NF4 | Performance — low-latency chat responses | ✅ | SSE streaming (<1s first token); `previous_response_id` avoids full history resend |
-| NF5 | Reliability — handle errors gracefully | ✅ | Error boundaries per route (`error.tsx`), SSE error events, toast notifications |
-| D1 | Source code in repository | ✅ | GitHub: `ridoNev1/cranberry-juice` |
-| D2 | Instructions to run the application | ✅ | README.md with local setup, env vars, commands |
-| D3 | Brief architecture design explanation | ✅ | This document (`docs/architecture-fsd.docx`) |
-| D4 | Publicly hosted working demo | ✅ | https://cranberry.satu-meja.com |
+| #   | Requirement                                      | Status | Implementation                                                                      |
+| --- | ------------------------------------------------ | ------ | ----------------------------------------------------------------------------------- |
+| R1  | Authentication with user registration and login  | ✅     | Better Auth v1.6.14 — email + bcrypt password, HTTP-only session cookie             |
+| R2  | Allow creation of user accounts                  | ✅     | `POST /api/auth/sign-up` → User record + OTP email via Resend                       |
+| R3  | Login using email and password                   | ✅     | `POST /api/auth/sign-in/email` → session created, cookie set                        |
+| R4  | Store and associate prompts with a project/agent | ✅     | `SavedPrompt` table (FK → Agent + User), CRUD at `/api/saved-prompts`               |
+| R5  | Chat interface via OpenAI Responses API          | ✅     | `POST /api/chat` — SSE stream using `openai.responses.create()`                     |
+| R6  | Upload files to a project (OpenAI Files API)     | ✅     | `POST /api/agents/[id]/files` → OpenAI Files API + vector store indexing            |
+| NF1 | Scalability — multiple users and projects        | ✅     | DB indexed by userId/agentId; stateless Next.js; rate limiting per user             |
+| NF2 | Security — protect user data and auth flows      | ✅     | Session-gated routes, ownership checks, Cloudflare Turnstile, HTTP-only cookies     |
+| NF3 | Extensibility — allow future additions           | ✅     | Models decoupled in `lib/agents/models.ts`; tools additive array; plugin-ready auth |
+| NF4 | Performance — low-latency chat responses         | ✅     | SSE streaming (<1s first token); `previous_response_id` avoids full history resend  |
+| NF5 | Reliability — handle errors gracefully           | ✅     | Error boundaries per route (`error.tsx`), SSE error events, toast notifications     |
+| D1  | Source code in repository                        | ✅     | GitHub: `ridoNev1/cranberry-juice`                                                  |
+| D2  | Instructions to run the application              | ✅     | README.md with local setup, env vars, commands                                      |
+| D3  | Brief architecture design explanation            | ✅     | This document (`docs/architecture-fsd.docx`)                                        |
+| D4  | Publicly hosted working demo                     | ✅     | https://cranberry.satu-meja.com                                                     |
 
 ---
 
@@ -67,53 +66,53 @@ The system is deployed on a VPS using Docker Compose, with nginx as reverse prox
 
 ### Core
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| Framework | Next.js (App Router) | 16.2.6 |
-| Language | TypeScript | 5.x |
-| Runtime | Node.js | 22 (Alpine) |
-| UI Library | React | 19.2.4 |
-| Package Manager | pnpm | 10.33.0 |
+| Layer           | Technology           | Version     |
+| --------------- | -------------------- | ----------- |
+| Framework       | Next.js (App Router) | 16.2.6      |
+| Language        | TypeScript           | 5.x         |
+| Runtime         | Node.js              | 22 (Alpine) |
+| UI Library      | React                | 19.2.4      |
+| Package Manager | pnpm                 | 10.33.0     |
 
 ### UI & Styling
 
-| Library | Purpose | Version |
-|---------|---------|---------|
-| Tailwind CSS | Utility-first styling | 4.x |
-| Radix UI | Accessible primitives | 1.5.0 |
-| shadcn | Component library (Radix-based) | 4.10.0 |
-| next-themes | Dark/light mode | 0.4.6 |
-| Lucide React | Icon set | 1.17.0 |
-| Sonner | Toast notifications | 2.0.7 |
-| class-variance-authority | Component variants | 0.7.1 |
+| Library                  | Purpose                         | Version |
+| ------------------------ | ------------------------------- | ------- |
+| Tailwind CSS             | Utility-first styling           | 4.x     |
+| Radix UI                 | Accessible primitives           | 1.5.0   |
+| shadcn                   | Component library (Radix-based) | 4.10.0  |
+| next-themes              | Dark/light mode                 | 0.4.6   |
+| Lucide React             | Icon set                        | 1.17.0  |
+| Sonner                   | Toast notifications             | 2.0.7   |
+| class-variance-authority | Component variants              | 0.7.1   |
 
 ### Data & Backend
 
-| Library | Purpose | Version |
-|---------|---------|---------|
-| Prisma ORM | Database access | 7.8.0 |
-| @prisma/adapter-pg | PostgreSQL native adapter | 7.8.0 |
-| pg | PostgreSQL client | 8.21.0 |
-| Better Auth | Authentication framework | 1.6.14 |
-| Resend | Transactional email | 6.12.4 |
-| OpenAI SDK | AI completions + files | 6.42.0 |
-| AWS SDK S3 | MinIO S3-compatible storage | 3.1063.0 |
-| Zod | Server-side validation | 4.4.3 |
-| Valibot | Client-side schema validation | 1.4.1 |
+| Library            | Purpose                       | Version  |
+| ------------------ | ----------------------------- | -------- |
+| Prisma ORM         | Database access               | 7.8.0    |
+| @prisma/adapter-pg | PostgreSQL native adapter     | 7.8.0    |
+| pg                 | PostgreSQL client             | 8.21.0   |
+| Better Auth        | Authentication framework      | 1.6.14   |
+| Resend             | Transactional email           | 6.12.4   |
+| OpenAI SDK         | AI completions + files        | 6.42.0   |
+| AWS SDK S3         | MinIO S3-compatible storage   | 3.1063.0 |
+| Zod                | Server-side validation        | 4.4.3    |
+| Valibot            | Client-side schema validation | 1.4.1    |
 
 ### Bot Protection
 
-| Library | Purpose |
-|---------|---------|
+| Library                   | Purpose                             |
+| ------------------------- | ----------------------------------- |
 | @marsidev/react-turnstile | Cloudflare Turnstile captcha widget |
 
 ### Dev Tools
 
-| Tool | Purpose |
-|------|---------|
-| ESLint | Linting |
+| Tool     | Purpose         |
+| -------- | --------------- |
+| ESLint   | Linting         |
 | Prettier | Code formatting |
-| Vitest | Unit testing |
+| Vitest   | Unit testing    |
 
 ---
 
@@ -136,6 +135,7 @@ flowchart TD
 ```
 
 **Deployment topology:**
+
 - All services run on one VPS (Ubuntu 22.04, 2 CPU, 4 GB RAM)
 - Docker network `cranberry` bridges all containers
 - Port 3000 bound to `127.0.0.1` only — external traffic via nginx on 80/443
@@ -177,6 +177,7 @@ Login:
 ### Bot Protection
 
 Cloudflare Turnstile protects login and register forms:
+
 - **Widget:** `components/turnstile-widget.tsx` using `@marsidev/react-turnstile`
 - **Verification:** `lib/turnstile.ts` → POST to `https://challenges.cloudflare.com/turnstile/v0/siteverify`
 - Site key: `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (baked at build time)
@@ -189,6 +190,7 @@ Cloudflare Turnstile protects login and register forms:
 ### Rate Limiting
 
 Chat endpoint is rate-limited at 20 requests/minute per user:
+
 - Implementation: `lib/rate-limit.ts` — in-memory sliding window
 - Response: `429 Too Many Requests` with `Retry-After` header
 - Note: for multi-instance scale, swap to Redis
@@ -214,105 +216,112 @@ User ──< Agent ──< Conversation ──< Message ──< ChatAttachment
 ### Models
 
 #### User
-| Field | Type | Notes |
-|-------|------|-------|
-| id | String | CUID, PK |
-| name | String | Display name |
-| email | String | Unique |
-| emailVerified | Boolean | Default false |
-| image | String? | Avatar URL |
-| createdAt | DateTime | |
-| updatedAt | DateTime | Auto-updated |
+
+| Field         | Type     | Notes         |
+| ------------- | -------- | ------------- |
+| id            | String   | CUID, PK      |
+| name          | String   | Display name  |
+| email         | String   | Unique        |
+| emailVerified | Boolean  | Default false |
+| image         | String?  | Avatar URL    |
+| createdAt     | DateTime |               |
+| updatedAt     | DateTime | Auto-updated  |
 
 #### Agent
-| Field | Type | Notes |
-|-------|------|-------|
-| id | String | CUID, PK |
-| userId | String | FK → User (cascade) |
-| name | String | Agent display name |
-| description | String? | Short description |
-| model | String | Default: `gpt-4o-mini` |
-| systemPrompt | String? | Text, behavioral instructions |
-| vectorStoreId | String? | Unique, OpenAI vector store ID |
-| isDefault | Boolean | Default false; one per user |
-| createdAt | DateTime | |
-| updatedAt | DateTime | Indexed |
+
+| Field         | Type     | Notes                          |
+| ------------- | -------- | ------------------------------ |
+| id            | String   | CUID, PK                       |
+| userId        | String   | FK → User (cascade)            |
+| name          | String   | Agent display name             |
+| description   | String?  | Short description              |
+| model         | String   | Default: `gpt-4o-mini`         |
+| systemPrompt  | String?  | Text, behavioral instructions  |
+| vectorStoreId | String?  | Unique, OpenAI vector store ID |
+| isDefault     | Boolean  | Default false; one per user    |
+| createdAt     | DateTime |                                |
+| updatedAt     | DateTime | Indexed                        |
 
 **Indexes:** `[userId]`, `[userId, isDefault]`, `[updatedAt]`
 
 #### Conversation
-| Field | Type | Notes |
-|-------|------|-------|
-| id | String | CUID, PK |
-| agentId | String | FK → Agent (cascade) |
-| userId | String | FK → User (cascade) |
-| title | String? | Auto-generated from first message |
-| createdAt | DateTime | |
-| updatedAt | DateTime | Indexed |
+
+| Field     | Type     | Notes                             |
+| --------- | -------- | --------------------------------- |
+| id        | String   | CUID, PK                          |
+| agentId   | String   | FK → Agent (cascade)              |
+| userId    | String   | FK → User (cascade)               |
+| title     | String?  | Auto-generated from first message |
+| createdAt | DateTime |                                   |
+| updatedAt | DateTime | Indexed                           |
 
 **Indexes:** `[agentId]`, `[userId]`, `[updatedAt]`
 
 #### Message
-| Field | Type | Notes |
-|-------|------|-------|
-| id | String | CUID, PK |
-| conversationId | String | FK → Conversation (cascade) |
-| role | String | `user` / `assistant` / `system` |
-| content | String | Text (db.Text) |
-| openaiResponseId | String? | OpenAI Responses API response ID |
-| createdAt | DateTime | Indexed |
+
+| Field            | Type     | Notes                            |
+| ---------------- | -------- | -------------------------------- |
+| id               | String   | CUID, PK                         |
+| conversationId   | String   | FK → Conversation (cascade)      |
+| role             | String   | `user` / `assistant` / `system`  |
+| content          | String   | Text (db.Text)                   |
+| openaiResponseId | String?  | OpenAI Responses API response ID |
+| createdAt        | DateTime | Indexed                          |
 
 **Indexes:** `[conversationId]`, `[createdAt]`
 
 #### AgentFile (Knowledge Base)
-| Field | Type | Notes |
-|-------|------|-------|
-| id | String | CUID, PK |
-| agentId | String | FK → Agent (cascade) |
-| userId | String | FK → User (cascade) |
-| filename | String | Original filename |
-| mimeType | String | MIME type |
-| sizeBytes | Int | File size |
-| minioKey | String | S3 key in MinIO |
-| openaiFileId | String? | OpenAI Files API ID |
-| openaiVectorStoreFileId | String? | Vector store attachment ID |
-| vectorStoreStatus | String? | `in_progress` / `completed` / `failed` |
-| createdAt | DateTime | |
+
+| Field                   | Type     | Notes                                  |
+| ----------------------- | -------- | -------------------------------------- |
+| id                      | String   | CUID, PK                               |
+| agentId                 | String   | FK → Agent (cascade)                   |
+| userId                  | String   | FK → User (cascade)                    |
+| filename                | String   | Original filename                      |
+| mimeType                | String   | MIME type                              |
+| sizeBytes               | Int      | File size                              |
+| minioKey                | String   | S3 key in MinIO                        |
+| openaiFileId            | String?  | OpenAI Files API ID                    |
+| openaiVectorStoreFileId | String?  | Vector store attachment ID             |
+| vectorStoreStatus       | String?  | `in_progress` / `completed` / `failed` |
+| createdAt               | DateTime |                                        |
 
 #### ChatAttachment (Per-message)
-| Field | Type | Notes |
-|-------|------|-------|
-| id | String | CUID, PK |
-| userId | String | FK → User (cascade) |
-| agentId | String? | FK → Agent (cascade) |
-| conversationId | String? | FK → Conversation (cascade) |
-| messageId | String? | FK → Message (cascade) |
-| filename | String | Original filename |
-| mimeType | String | MIME type |
-| sizeBytes | Int | File size |
-| minioKey | String | S3 key in MinIO |
-| openaiFileId | String? | OpenAI Files API ID |
-| createdAt | DateTime | |
+
+| Field          | Type     | Notes                       |
+| -------------- | -------- | --------------------------- |
+| id             | String   | CUID, PK                    |
+| userId         | String   | FK → User (cascade)         |
+| agentId        | String?  | FK → Agent (cascade)        |
+| conversationId | String?  | FK → Conversation (cascade) |
+| messageId      | String?  | FK → Message (cascade)      |
+| filename       | String   | Original filename           |
+| mimeType       | String   | MIME type                   |
+| sizeBytes      | Int      | File size                   |
+| minioKey       | String   | S3 key in MinIO             |
+| openaiFileId   | String?  | OpenAI Files API ID         |
+| createdAt      | DateTime |                             |
 
 #### SavedPrompt
-| Field | Type | Notes |
-|-------|------|-------|
-| id | String | CUID, PK |
-| agentId | String | FK → Agent (cascade) |
-| userId | String | FK → User (cascade) |
-| label | String | Short display name (≤100 chars) |
-| content | String | Full prompt text (db.Text, ≤4000 chars) |
-| createdAt | DateTime | |
+
+| Field     | Type     | Notes                                   |
+| --------- | -------- | --------------------------------------- |
+| id        | String   | CUID, PK                                |
+| agentId   | String   | FK → Agent (cascade)                    |
+| userId    | String   | FK → User (cascade)                     |
+| label     | String   | Short display name (≤100 chars)         |
+| content   | String   | Full prompt text (db.Text, ≤4000 chars) |
+| createdAt | DateTime |                                         |
 
 ### Migrations
 
-| Migration | Description |
-|-----------|-------------|
-| `20260608161000_init_auth_baseline` | Better Auth core tables (User, Session, Account, Verification) |
-| `20260608162000_add_agent_chat_foundation` | Agent, Conversation, Message, SavedPrompt |
-| `20260609102000_add_vector_store_fields` | vectorStoreId on Agent; AgentFile with OpenAI fields |
-| `20260609143000_add_default_agent_flag` | isDefault flag on Agent |
-| `20260609144500_add_chat_attachments` | ChatAttachment table |
+| Migration                                  | Description                                                    |
+| ------------------------------------------ | -------------------------------------------------------------- |
+| `20260608161000_init_auth_baseline`        | Better Auth core tables (User, Session, Account, Verification) |
+| `20260608162000_add_agent_chat_foundation` | Agent, Conversation, Message, SavedPrompt                      |
+| `20260609102000_add_vector_store_fields`   | vectorStoreId on Agent; AgentFile with OpenAI fields           |
+| `20260609143000_add_default_agent_flag`    | isDefault flag on Agent                                        |
+| `20260609144500_add_chat_attachments`      | ChatAttachment table                                           |
 
 ---
 
@@ -322,61 +331,61 @@ All routes require authentication unless noted. Session checked via `getRequestS
 
 ### Authentication
 
-| Route | Method | Auth | Description |
-|-------|--------|------|-------------|
-| `/api/auth/[...all]` | GET, POST | — | Better Auth catch-all handler |
+| Route                | Method    | Auth | Description                   |
+| -------------------- | --------- | ---- | ----------------------------- |
+| `/api/auth/[...all]` | GET, POST | —    | Better Auth catch-all handler |
 
 ### Chat
 
-| Route | Method | Request Body | Response | Description |
-|-------|--------|-------------|----------|-------------|
-| `/api/chat` | POST | `{ agentId?, conversationId?, message, attachmentIds[], deeperResearch, webMode }` | SSE stream | Stream AI response; rate-limited 20 req/min |
-| `/api/chat/files` | POST | FormData: `file` | `{ attachment: ChatAttachment }` | Upload chat attachment |
+| Route             | Method | Request Body                                                                       | Response                         | Description                                 |
+| ----------------- | ------ | ---------------------------------------------------------------------------------- | -------------------------------- | ------------------------------------------- |
+| `/api/chat`       | POST   | `{ agentId?, conversationId?, message, attachmentIds[], deeperResearch, webMode }` | SSE stream                       | Stream AI response; rate-limited 20 req/min |
+| `/api/chat/files` | POST   | FormData: `file`                                                                   | `{ attachment: ChatAttachment }` | Upload chat attachment                      |
 
 **SSE Events from `/api/chat`:**
 
-| Event | Data | Description |
-|-------|------|-------------|
-| `start` | `{ conversationId, userMessageId }` | Request accepted, IDs allocated |
-| `delta` | `{ text }` | Streamed text chunk from model |
-| `done` | `{ assistantMessageId, responseId }` | Stream complete |
-| `error` | `{ message }` | Error occurred |
+| Event   | Data                                 | Description                     |
+| ------- | ------------------------------------ | ------------------------------- |
+| `start` | `{ conversationId, userMessageId }`  | Request accepted, IDs allocated |
+| `delta` | `{ text }`                           | Streamed text chunk from model  |
+| `done`  | `{ assistantMessageId, responseId }` | Stream complete                 |
+| `error` | `{ message }`                        | Error occurred                  |
 
 ### Agents
 
-| Route | Method | Request | Response | Description |
-|-------|--------|---------|----------|-------------|
-| `/api/agents` | GET | — | `{ agents[] }` | List user's custom agents |
-| `/api/agents` | POST | `{ name, description?, model, systemPrompt? }` | `{ agent }` | Create agent + vector store |
-| `/api/agents/[id]` | GET | — | `{ agent }` | Get agent details |
-| `/api/agents/[id]` | PATCH | Partial agent fields | `{ agent }` | Update agent |
-| `/api/agents/[id]` | DELETE | — | 204 | Delete agent, cascade conversations + vector store |
-| `/api/agents/[id]/files` | GET | — | `{ files[] }` | List knowledge base files |
-| `/api/agents/[id]/files` | POST | FormData: `file` | `{ file: AgentFile }` | Upload file to KB |
-| `/api/agents/[id]/conversations` | GET | — | `{ conversations[] }` | List agent conversations |
-| `/api/agents/[id]/conversations` | POST | `{ title? }` | `{ conversation }` | Create conversation |
+| Route                            | Method | Request                                        | Response              | Description                                        |
+| -------------------------------- | ------ | ---------------------------------------------- | --------------------- | -------------------------------------------------- |
+| `/api/agents`                    | GET    | —                                              | `{ agents[] }`        | List user's custom agents                          |
+| `/api/agents`                    | POST   | `{ name, description?, model, systemPrompt? }` | `{ agent }`           | Create agent + vector store                        |
+| `/api/agents/[id]`               | GET    | —                                              | `{ agent }`           | Get agent details                                  |
+| `/api/agents/[id]`               | PATCH  | Partial agent fields                           | `{ agent }`           | Update agent                                       |
+| `/api/agents/[id]`               | DELETE | —                                              | 204                   | Delete agent, cascade conversations + vector store |
+| `/api/agents/[id]/files`         | GET    | —                                              | `{ files[] }`         | List knowledge base files                          |
+| `/api/agents/[id]/files`         | POST   | FormData: `file`                               | `{ file: AgentFile }` | Upload file to KB                                  |
+| `/api/agents/[id]/conversations` | GET    | —                                              | `{ conversations[] }` | List agent conversations                           |
+| `/api/agents/[id]/conversations` | POST   | `{ title? }`                                   | `{ conversation }`    | Create conversation                                |
 
 ### Conversations
 
-| Route | Method | Request | Response | Description |
-|-------|--------|---------|----------|-------------|
-| `/api/conversations/[id]` | GET | — | `{ conversation }` | Get conversation metadata |
-| `/api/conversations/[id]` | DELETE | — | 204 | Delete conversation + messages |
-| `/api/conversations/[id]/messages` | GET | — | `{ conversation, messages[] }` | All messages |
+| Route                              | Method | Request | Response                       | Description                    |
+| ---------------------------------- | ------ | ------- | ------------------------------ | ------------------------------ |
+| `/api/conversations/[id]`          | GET    | —       | `{ conversation }`             | Get conversation metadata      |
+| `/api/conversations/[id]`          | DELETE | —       | 204                            | Delete conversation + messages |
+| `/api/conversations/[id]/messages` | GET    | —       | `{ conversation, messages[] }` | All messages                   |
 
 ### Files
 
-| Route | Method | Request | Response | Description |
-|-------|--------|---------|----------|-------------|
-| `/api/files/[fileId]` | DELETE | — | 204 | Delete agent file (MinIO + OpenAI) |
+| Route                 | Method | Request | Response | Description                        |
+| --------------------- | ------ | ------- | -------- | ---------------------------------- |
+| `/api/files/[fileId]` | DELETE | —       | 204      | Delete agent file (MinIO + OpenAI) |
 
 ### Saved Prompts
 
-| Route | Method | Request | Response | Description |
-|-------|--------|---------|----------|-------------|
-| `/api/saved-prompts` | GET | `?agentId=` | `{ prompts[] }` | List prompts for agent |
-| `/api/saved-prompts` | POST | `{ agentId, label, content }` | `{ prompt }` | Create prompt |
-| `/api/saved-prompts/[id]` | DELETE | — | 204 | Delete prompt |
+| Route                     | Method | Request                       | Response        | Description            |
+| ------------------------- | ------ | ----------------------------- | --------------- | ---------------------- |
+| `/api/saved-prompts`      | GET    | `?agentId=`                   | `{ prompts[] }` | List prompts for agent |
+| `/api/saved-prompts`      | POST   | `{ agentId, label, content }` | `{ prompt }`    | Create prompt          |
+| `/api/saved-prompts/[id]` | DELETE | —                             | 204             | Delete prompt          |
 
 ---
 
@@ -390,13 +399,13 @@ All routes require authentication unless noted. Session checked via `getRequestS
 
 ### Available Models
 
-| Model ID | Label | Use Case |
-|----------|-------|----------|
-| `gpt-4o-mini` | GPT-4o Mini | Default, fast responses |
-| `gpt-4.1-mini` | GPT-4.1 Mini | Balanced |
-| `gpt-4o` | GPT-4o | Multimodal |
-| `gpt-5-mini` | GPT-5 Mini | Reasoning |
-| `gpt-5.4-mini` | GPT-5.4 Mini | Deeper Research mode |
+| Model ID       | Label        | Use Case                |
+| -------------- | ------------ | ----------------------- |
+| `gpt-4o-mini`  | GPT-4o Mini  | Default, fast responses |
+| `gpt-4.1-mini` | GPT-4.1 Mini | Balanced                |
+| `gpt-4o`       | GPT-4o       | Multimodal              |
+| `gpt-5-mini`   | GPT-5 Mini   | Reasoning               |
+| `gpt-5.4-mini` | GPT-5.4 Mini | Deeper Research mode    |
 
 ### Chat Request Flow
 
@@ -439,10 +448,10 @@ When attachments are present, the input is built as a `ResponseInput` array:
 
 ### Tools
 
-| Tool | Trigger | Effect |
-|------|---------|--------|
-| `file_search` | Agent has `vectorStoreId` | RAG over agent knowledge base via OpenAI vector store |
-| `web_search_preview` | `webMode: true` in request | Real-time web search by OpenAI |
+| Tool                 | Trigger                    | Effect                                                |
+| -------------------- | -------------------------- | ----------------------------------------------------- |
+| `file_search`        | Agent has `vectorStoreId`  | RAG over agent knowledge base via OpenAI vector store |
+| `web_search_preview` | `webMode: true` in request | Real-time web search by OpenAI                        |
 
 Both tools can be active simultaneously.
 
@@ -458,6 +467,7 @@ Both tools can be active simultaneously.
 ### What is an Agent?
 
 An Agent is a user-owned, isolated AI assistant with:
+
 - Its own **system prompt** (behavioral instructions)
 - Its own **AI model** selection
 - Its own **conversation history** (separate threads per agent)
@@ -467,6 +477,7 @@ An Agent is a user-owned, isolated AI assistant with:
 ### Default Agent
 
 Every user has exactly one default agent (`isDefault: true`):
+
 - Created automatically on first chat page visit via `getOrCreateDefaultAgent(userId)`
 - Named "Cranberry Assistant"
 - Not shown in the custom agents list
@@ -475,16 +486,19 @@ Every user has exactly one default agent (`isDefault: true`):
 ### Agent Lifecycle
 
 **Create (POST /api/agents):**
+
 1. Validate input (name, model, systemPrompt)
 2. Create Agent record in DB
 3. Create OpenAI vector store → store `vectorStoreId` on Agent
 4. Return Agent (succeeds even if vector store creation fails)
 
 **Update (PATCH /api/agents/[id]):**
+
 - Partial updates to: name, description, model, systemPrompt
 - Does not affect vector store
 
 **Delete (DELETE /api/agents/[id]):**
+
 1. Fetch agent, verify ownership
 2. Delete OpenAI vector store if `vectorStoreId` present
 3. Prisma cascade deletes: Conversations → Messages → ChatAttachments, AgentFiles, SavedPrompts
@@ -492,6 +506,7 @@ Every user has exactly one default agent (`isDefault: true`):
 **Vector Store — Lazy Initialization:**
 
 `lib/agents/vector-store.ts` → `ensureAgentVectorStore({ userId, agent })`:
+
 - If `agent.vectorStoreId` exists → return it
 - Else: create new OpenAI vector store, persist to DB, return ID
 
@@ -501,19 +516,19 @@ This is called during file uploads to guarantee a vector store exists before att
 
 All DB access via `lib/agents/queries.ts`:
 
-| Function | Purpose |
-|----------|---------|
-| `listAgents(userId)` | All custom agents, ordered by updatedAt DESC |
-| `getOrCreateDefaultAgent(userId)` | Lazy default agent |
-| `getAgent(userId, id)` | Single agent with file/conversation counts |
-| `createAgent(userId, input, opts)` | Create with optional vectorStoreId |
-| `updateAgent(userId, id, input)` | Partial update, ownership validated |
-| `deleteAgent(userId, id)` | Hard delete |
-| `setAgentVectorStoreId(userId, agentId, id)` | Attach vector store ID |
-| `listAgentFiles(userId, agentId)` | Files ordered by createdAt DESC |
-| `createAgentFile(input)` | Create file record |
-| `deleteAgentFile(userId, id)` | Delete file record |
-| `updateAgentFileVectorStore(...)` | Update vector store status fields |
+| Function                                     | Purpose                                      |
+| -------------------------------------------- | -------------------------------------------- |
+| `listAgents(userId)`                         | All custom agents, ordered by updatedAt DESC |
+| `getOrCreateDefaultAgent(userId)`            | Lazy default agent                           |
+| `getAgent(userId, id)`                       | Single agent with file/conversation counts   |
+| `createAgent(userId, input, opts)`           | Create with optional vectorStoreId           |
+| `updateAgent(userId, id, input)`             | Partial update, ownership validated          |
+| `deleteAgent(userId, id)`                    | Hard delete                                  |
+| `setAgentVectorStoreId(userId, agentId, id)` | Attach vector store ID                       |
+| `listAgentFiles(userId, agentId)`            | Files ordered by createdAt DESC              |
+| `createAgentFile(input)`                     | Create file record                           |
+| `deleteAgentFile(userId, id)`                | Delete file record                           |
+| `updateAgentFileVectorStore(...)`            | Update vector store status fields            |
 
 ---
 
@@ -522,6 +537,7 @@ All DB access via `lib/agents/queries.ts`:
 ### Architecture
 
 Files are stored in two places simultaneously:
+
 1. **MinIO** — permanent, durable binary storage (S3-compatible)
 2. **OpenAI Files API** — for inference (multimodal input or vector store indexing)
 
@@ -529,12 +545,12 @@ Files are stored in two places simultaneously:
 
 **Client:** `lib/minio.ts` → `S3Client` from `@aws-sdk/client-s3`
 
-| Env Var | Purpose |
-|---------|---------|
-| `MINIO_ENDPOINT` | MinIO server URL |
-| `MINIO_ACCESS_KEY` | S3 access key |
-| `MINIO_SECRET_KEY` | S3 secret key |
-| `MINIO_BUCKET` | Bucket name |
+| Env Var                  | Purpose                      |
+| ------------------------ | ---------------------------- |
+| `MINIO_ENDPOINT`         | MinIO server URL             |
+| `MINIO_ACCESS_KEY`       | S3 access key                |
+| `MINIO_SECRET_KEY`       | S3 secret key                |
+| `MINIO_BUCKET`           | Bucket name                  |
 | `MINIO_FORCE_PATH_STYLE` | `true` for self-hosted MinIO |
 
 ### File Types
@@ -559,11 +575,11 @@ Files are stored in two places simultaneously:
 
 `lib/agents/files.ts`:
 
-| Rule | Value |
-|------|-------|
-| Allowed types | PDF, JPEG, PNG, WebP |
-| Max file size | 10 MB |
-| Vector store support | PDF only |
+| Rule                  | Value                              |
+| --------------------- | ---------------------------------- |
+| Allowed types         | PDF, JPEG, PNG, WebP               |
+| Max file size         | 10 MB                              |
+| Vector store support  | PDF only                           |
 | Filename sanitization | Remove special chars, limit length |
 
 ### Agent File Upload Flow
@@ -627,18 +643,21 @@ app/
 The core chat interface. Server-rendered with hydration props, then fully client-driven.
 
 **Props:**
+
 - `agent` — current agent info (id, name, model)
 - `conversationBasePath` — URL prefix for conversation routing
 - `initialConversationId` + `initialMessages` — SSR hydration
 - `emptyLayout` — controls which suggested prompts to show
 
 **State:**
+
 - `conversationId` — current conversation (null = new chat)
 - `messages[]` — full message list
 - `attachments[]` — pending file attachments
 - `isStreaming` — true while request in flight
 
 **Core methods:**
+
 - `handleSubmit(message, options)` → POST `/api/chat`, reads SSE stream
 - `handleAttachFiles(files[])` → POST `/api/chat/files` for each file
 - `handleRemoveAttachment(id)` → remove from pending list
@@ -648,6 +667,7 @@ The core chat interface. Server-rendered with hydration props, then fully client
 Rich message composer with multiple modes.
 
 **Features:**
+
 - Auto-expanding textarea (max 200px default, 400px expanded)
 - **Deeper Research toggle** — sends `deeperResearch: true`, uses `gpt-5.4-mini`
 - **Web Mode toggle** — sends `webMode: true`, adds `web_search_preview` tool
@@ -661,6 +681,7 @@ Rich message composer with multiple modes.
 Conversation history and navigation.
 
 **Sections:**
+
 - Global chat (default agent conversations, grouped by date)
 - Per-agent sections (custom agents with their conversations)
 - Grouping: Today / Yesterday / Last 7 days / Earlier
@@ -682,6 +703,7 @@ Create and edit agents.
 Upload and manage agent knowledge base files.
 
 **Features:**
+
 - Click to browse or drag-and-drop
 - Upload progress + vector store status badges
 - Delete files inline
@@ -705,15 +727,16 @@ The app uses **local React state only** — no global state library (Redux, Zust
 
 ### Fonts
 
-| Font | Usage |
-|------|-------|
-| Outfit | Headings |
-| IBM Plex Sans | Body text |
-| Geist Mono | Monospace / code |
+| Font          | Usage            |
+| ------------- | ---------------- |
+| Outfit        | Headings         |
+| IBM Plex Sans | Body text        |
+| Geist Mono    | Monospace / code |
 
 ### Loading & Error States
 
 Each route segment has:
+
 - `loading.tsx` — skeleton UI shown during RSC data fetch
 - `error.tsx` — error boundary with "Try again" button
 
@@ -728,6 +751,7 @@ Allows users to save frequently used messages per agent, for quick reuse in chat
 ### Data Flow
 
 **Save a prompt:**
+
 1. User types message in ChatInput
 2. Clicks bookmark → enter label (≤100 chars)
 3. POST `/api/saved-prompts` with `{ agentId, label, content }`
@@ -736,23 +760,25 @@ Allows users to save frequently used messages per agent, for quick reuse in chat
 6. Toast success
 
 **Load a prompt:**
+
 1. User opens saved prompts panel (bookmark icon)
 2. GET `/api/saved-prompts?agentId=` fetches list
 3. User clicks prompt → text inserted into textarea
 4. Textarea auto-expands to fit content
 
 **Delete a prompt:**
+
 1. Hover over prompt → delete button appears
 2. DELETE `/api/saved-prompts/[id]`
 3. Removed from list, toast success
 
 ### Query Functions (`lib/chat/saved-prompts.ts`)
 
-| Function | Description |
-|----------|-------------|
-| `listSavedPrompts(userId, agentId)` | Ordered by createdAt DESC |
-| `createSavedPrompt({ userId, agentId, label, content })` | Create new prompt |
-| `deleteSavedPrompt(userId, id)` | Delete with ownership check |
+| Function                                                 | Description                 |
+| -------------------------------------------------------- | --------------------------- |
+| `listSavedPrompts(userId, agentId)`                      | Ordered by createdAt DESC   |
+| `createSavedPrompt({ userId, agentId, label, content })` | Create new prompt           |
+| `deleteSavedPrompt(userId, id)`                          | Delete with ownership check |
 
 ---
 
@@ -760,33 +786,35 @@ Allows users to save frequently used messages per agent, for quick reuse in chat
 
 ### Server
 
-| Resource | Value |
-|----------|-------|
-| Provider | Tencent Cloud |
-| OS | Ubuntu 22.04 |
-| CPU | 2 vCPU |
-| RAM | 4 GB |
-| Disk | 59 GB |
-| IP | 43.157.241.12 |
-| Domain | cranberry.satu-meja.com |
+| Resource | Value                   |
+| -------- | ----------------------- |
+| Provider | Tencent Cloud           |
+| OS       | Ubuntu 22.04            |
+| CPU      | 2 vCPU                  |
+| RAM      | 4 GB                    |
+| Disk     | 59 GB                   |
+| IP       | 43.157.241.12           |
+| Domain   | cranberry.satu-meja.com |
 
 ### Docker Architecture
 
 **Multi-stage Dockerfile:**
 
-| Stage | Base | Purpose |
-|-------|------|---------|
-| `base` | node:22-alpine | Shared pnpm setup |
-| `deps` | base | Install dependencies (frozen lockfile) |
-| `builder` | base | Next.js production build |
-| `runner` | base | Minimal runtime image |
+| Stage     | Base           | Purpose                                |
+| --------- | -------------- | -------------------------------------- |
+| `base`    | node:22-alpine | Shared pnpm setup                      |
+| `deps`    | base           | Install dependencies (frozen lockfile) |
+| `builder` | base           | Next.js production build               |
+| `runner`  | base           | Minimal runtime image                  |
 
 **Builder stage notes:**
+
 - Build-time env vars (placeholders for SDK initialization): `DATABASE_URL`, `RESEND_API_KEY`, `OPENAI_API_KEY`, etc.
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` passed as Docker build arg (baked into client bundle)
 - Runs `prisma generate` then `next build`
 
 **Runner stage:**
+
 - Copies: `.next/standalone`, `.next/static`, `public`, `prisma/`, `prisma.config.js`
 - Installs `prisma@7` via npm for migration support
 - Runs as unprivileged user `nextjs` (UID 1001)
@@ -794,17 +822,18 @@ Allows users to save frequently used messages per agent, for quick reuse in chat
 
 ### Docker Compose Services
 
-| Service | Image | Port | Purpose |
-|---------|-------|------|---------|
-| app | cranberry-juice:latest | 127.0.0.1:3000 | Next.js application |
-| postgres | postgres:16-alpine | internal | Primary database |
-| minio | minio/minio:latest | 9001 (console) | Object storage |
+| Service  | Image                  | Port           | Purpose             |
+| -------- | ---------------------- | -------------- | ------------------- |
+| app      | cranberry-juice:latest | 127.0.0.1:3000 | Next.js application |
+| postgres | postgres:16-alpine     | internal       | Primary database    |
+| minio    | minio/minio:latest     | 9001 (console) | Object storage      |
 
 All services share the `cranberry` bridge network. Postgres and MinIO use named volumes for persistence. App waits for both to be healthy before starting.
 
 ### nginx Configuration
 
 Reverse proxy with SSL termination:
+
 - Listens on 80 (redirects to HTTPS) and 443
 - SSL via Let's Encrypt (auto-renews via certbot cron)
 - Proxies to `127.0.0.1:3000`
@@ -830,21 +859,21 @@ Reverse proxy with SSL termination:
 
 ### Environment Variables
 
-| Variable | Required | Build/Runtime | Description |
-|----------|----------|---------------|-------------|
-| `DATABASE_URL` | Yes | Runtime | PostgreSQL connection string |
-| `BETTER_AUTH_SECRET` | Yes | Runtime | 32+ char random secret |
-| `BETTER_AUTH_URL` | Yes | Runtime | Public app URL (e.g. https://cranberry.satu-meja.com) |
-| `RESEND_API_KEY` | Yes | Runtime | Resend email API key |
-| `RESEND_DOMAIN` | Yes | Runtime | Verified sender domain |
-| `OPENAI_API_KEY` | Yes | Runtime | OpenAI API key |
-| `MINIO_ENDPOINT` | Yes | Runtime | MinIO server URL |
-| `MINIO_ACCESS_KEY` | Yes | Runtime | MinIO access key |
-| `MINIO_SECRET_KEY` | Yes | Runtime | MinIO secret key |
-| `MINIO_BUCKET` | Yes | Runtime | Bucket name |
-| `MINIO_FORCE_PATH_STYLE` | Yes | Runtime | `true` for self-hosted |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Yes | **Build-time** | Cloudflare Turnstile site key |
-| `TURNSTILE_SECRET_KEY` | Yes | Runtime | Cloudflare Turnstile secret |
+| Variable                         | Required | Build/Runtime  | Description                                           |
+| -------------------------------- | -------- | -------------- | ----------------------------------------------------- |
+| `DATABASE_URL`                   | Yes      | Runtime        | PostgreSQL connection string                          |
+| `BETTER_AUTH_SECRET`             | Yes      | Runtime        | 32+ char random secret                                |
+| `BETTER_AUTH_URL`                | Yes      | Runtime        | Public app URL (e.g. https://cranberry.satu-meja.com) |
+| `RESEND_API_KEY`                 | Yes      | Runtime        | Resend email API key                                  |
+| `RESEND_DOMAIN`                  | Yes      | Runtime        | Verified sender domain                                |
+| `OPENAI_API_KEY`                 | Yes      | Runtime        | OpenAI API key                                        |
+| `MINIO_ENDPOINT`                 | Yes      | Runtime        | MinIO server URL                                      |
+| `MINIO_ACCESS_KEY`               | Yes      | Runtime        | MinIO access key                                      |
+| `MINIO_SECRET_KEY`               | Yes      | Runtime        | MinIO secret key                                      |
+| `MINIO_BUCKET`                   | Yes      | Runtime        | Bucket name                                           |
+| `MINIO_FORCE_PATH_STYLE`         | Yes      | Runtime        | `true` for self-hosted                                |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Yes      | **Build-time** | Cloudflare Turnstile site key                         |
+| `TURNSTILE_SECRET_KEY`           | Yes      | Runtime        | Cloudflare Turnstile secret                           |
 
 ---
 
@@ -897,4 +926,4 @@ Reverse proxy with SSL termination:
 
 ---
 
-*Document generated from codebase analysis of Cranberry Juice v1.0.*
+_Document generated from codebase analysis of Cranberry Juice v1.0._
