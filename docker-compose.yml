@@ -1,0 +1,59 @@
+services:
+  app:
+    image: cranberry-juice:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - .env.production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - cranberry
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: "Pg_9vK3qT7mR2xL6pN8"
+      POSTGRES_DB: app_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app_user -d app_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - cranberry
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: "bucketuser19617"
+      MINIO_ROOT_PASSWORD: "Bk_7mQ2vR9xT4pN6zL1"
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - cranberry
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  cranberry:
+    driver: bridge
